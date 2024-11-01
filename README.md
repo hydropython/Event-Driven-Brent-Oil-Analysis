@@ -76,11 +76,14 @@ To set up the project, follow these steps:
 Clone the repository:
  git clone https://github.com/hydropython/Event-Driven-Brent-Oil-Analysis.git
 
+
 Navigate to the project directory:
    cd brent-oil-analysis
+
+
 Usage
 To run the application, execute the following command in your terminal:
-  pip install -r requirements.txt 
+   pip install -r requirements.txt 
 
 Contributing
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any improvements or suggestions.
