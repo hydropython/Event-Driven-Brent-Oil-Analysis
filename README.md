@@ -1,9 +1,7 @@
 # Event-Driven-Brent-Oil-Analysis
 
-Birhan Energies is dedicated to providing strategic insights to help clients navigate the volatile global oil market. This project aims to analyze and quantify the impact of significant political and economic events on Brent oil prices over the past decade. By leveraging data-driven risk management and decision-making intelligence, the project delivers clear, actionable insights that enhance understanding of price movements, support strategic investment decisions, and inform policy and operational planning.
-
 # Overview
-Birhan Energies is dedicated to providing strategic insights to help clients navigate the volatile global oil market. This project aims to analyze and quantify the impact of significant political and economic events on Brent oil prices over the past decade. By leveraging data-driven risk management and decision-making intelligence, the project delivers clear, actionable insights that enhance understanding of price movements, support strategic investment decisions, and inform policy and operational planning.
+Birhan Energies provides strategic insights to help clients navigate the volatile global oil market. This project analyzes the impact of key political and economic events on Brent oil prices over the past decade. By leveraging data-driven insights, we aim to enhance understanding of price movements, support investment decisions, and inform policy and operational planning.
 # Table of Contents
 •	Objective
 •	Constraints
