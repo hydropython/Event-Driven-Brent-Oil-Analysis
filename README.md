@@ -74,26 +74,13 @@ An interactive dashboard will be developed using Flask and React to visualize th
 To set up the project, follow these steps:
 
 Clone the repository:
-bash
-Copy code
-git clone https://github.com/yourusername/brent-oil-analysis.git
+ git clone https://github.com/hydropython/Event-Driven-Brent-Oil-Analysis.git
+
 Navigate to the project directory:
-bash
-
-
-git clone https://github.com/yourusername/brent-oil-analysis.git
-
-
-
-Copy code
-pip install -r requirements.txt
+   cd brent-oil-analysis
 Usage
 To run the application, execute the following command in your terminal:
-
-bash
-Copy code
-flask run
-Then open your browser and go to http://localhost:5000 to access the dashboard.
+  pip install -r requirements.txt 
 
 Contributing
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any improvements or suggestions.
