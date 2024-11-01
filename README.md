@@ -80,10 +80,10 @@ git clone https://github.com/yourusername/brent-oil-analysis.git
 Navigate to the project directory:
 bash
 
-Copy code
-cd brent-oil-analysis
-Install the required packages:
-bash
+
+git clone https://github.com/yourusername/brent-oil-analysis.git
+
+
 
 Copy code
 pip install -r requirements.txt
