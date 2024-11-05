@@ -1,9 +1,12 @@
-import numpy as np
+import numpy as np  
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Dropout
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+import shap
 
 class LSTMPricePredictor:
     def __init__(self, data, time_step=60):
@@ -20,19 +23,26 @@ class LSTMPricePredictor:
         self.data['Year'] = self.data['Date'].dt.year
         self.data.set_index('Date', inplace=True)
 
+    def create_dataset(self, data, time_step=1):
+        X, y = [], []
+        for i in range(len(data) - time_step):
+            X.append(data[i:(i + time_step), 0])  # Use the first column (Price)
+            y.append(data[i + time_step, 0])      # Next value as target
+        X = np.array(X)
+        y = np.array(y)
+        return X, y
+
     def scale_data(self):
         """Scale the data and create the dataset for LSTM."""
-        scaled_data = self.scaler.fit_transform(self.data[['Price', 'Month', 'Year']])
-        self.X_train, self.X_test, self.y_train, self.y_test = self.create_dataset(scaled_data)
+        scaled_data = self.scaler.fit_transform(self.data[['Price']])
+        X, y = self.create_dataset(scaled_data, time_step=10)  # Using 10 time steps
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    def create_dataset(self, data):
-        """Create dataset for LSTM from scaled data."""
-        X, y = [], []
-        for i in range(len(data) - self.time_step - 1):
-            a = data[i:(i + self.time_step), :]
-            X.append(a)
-            y.append(data[i + self.time_step, 0])  # Price as target
-        return np.array(X), np.array(y)
+        # Reshape input to be [samples, time steps, features]
+        X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
+        X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
+        
+        self.X_train, self.X_test, self.y_train, self.y_test = X_train, X_test, y_train, y_test
 
     def build_model(self):
         """Build and compile the LSTM model."""
@@ -55,13 +65,16 @@ class LSTMPricePredictor:
         predictions = self.scaler.inverse_transform(np.concatenate((predictions, np.zeros((predictions.shape[0], 2))), axis=1))
         return predictions
 
-    def calculate_rmse(self, predictions):
-        """Calculate the root mean squared error."""
-        rmse = np.sqrt(np.mean((predictions[:, 0] - self.scaler.inverse_transform(self.y_test.reshape(-1, 1))) ** 2))
-        return rmse
+    def calculate_metrics(self, predictions):
+        """Calculate evaluation metrics."""
+        y_true = self.scaler.inverse_transform(self.y_test.reshape(-1, 1))
+        mse = mean_squared_error(y_true, predictions[:, 0])
+        mae = mean_absolute_error(y_true, predictions[:, 0])
+        rmse = np.sqrt(mse)
+        return mse, mae, rmse
 
     def plot_predictions(self, predictions):
-        """Plot the predictions against the true prices."""
+        """Plot the predictions against the true prices and save the figure."""
         plt.figure(figsize=(14, 5))
         plt.plot(self.data.index[-len(self.y_test):], self.scaler.inverse_transform(self.y_test.reshape(-1, 1)), label='True Price', color='blue')
         plt.plot(self.data.index[-len(predictions):], predictions[:, 0], label='Predicted Price', color='red')
@@ -69,7 +82,32 @@ class LSTMPricePredictor:
         plt.xlabel('Date')
         plt.ylabel('Price')
         plt.legend()
-        plt.show()
+        
+        # Save the figure
+        plt.savefig('../Images/price_prediction_plot.png')  # Save as a PNG file
+        plt.close()  # Close the plot to free up memory
+
+    def explain_predictions(self):
+        """Explain model predictions using SHAP and save the summary plot and force plot."""
+        # Convert X_test to numpy array if not already
+        X_test_array = self.X_test
+        
+        # Initialize the SHAP DeepExplainer
+        explainer = shap.DeepExplainer(self.model, X_test_array)
+        shap_values = explainer.shap_values(X_test_array)
+
+        # Feature names for each time step in the sequence
+        feature_names = [f"Price (t-{i})" for i in range(X_test_array.shape[1])]
+
+        # Summary plot
+        shap.summary_plot(shap_values, X_test_array, feature_names=feature_names, show=False)
+        plt.savefig('../Images/shap_summary_plot.png')  # Save the SHAP summary plot
+        plt.close()  # Close the plot to free up memory
+
+        # Force plot for the first prediction
+        shap.initjs()
+        force_plot = shap.force_plot(explainer.expected_value[0], shap_values[0][0], X_test_array[0], feature_names=feature_names)
+        shap.save_html('../Images/shap_force_plot.html', force_plot)
 
     def run(self):
         """Run the full process."""
@@ -78,6 +116,12 @@ class LSTMPricePredictor:
         self.build_model()
         self.train_model()
         predictions = self.predict()
-        rmse = self.calculate_rmse(predictions)
+        
+        # Calculate and print metrics
+        mse, mae, rmse = self.calculate_metrics(predictions)
+        print(f'Mean Squared Error: {mse}')
+        print(f'Mean Absolute Error: {mae}')
         print(f'Root Mean Squared Error: {rmse}')
+        
         self.plot_predictions(predictions)
+        self.explain_predictions()
